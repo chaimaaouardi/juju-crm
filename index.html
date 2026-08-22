@@ -315,6 +315,11 @@
   .bc-meta a{color:var(--accent-deep);text-decoration:none;font-weight:700}
   .bc-meta .by{margin-left:auto;font-size:11px;color:var(--ink-faint)}
   .bc .note{font-size:12.5px;color:var(--ink-soft);line-height:1.4}
+  .bdec{display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,1fr));gap:6px;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r-sm);padding:9px 10px}
+  .bdec div{min-width:0}
+  .bdec .dl{font-family:var(--display);font-size:9.5px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:var(--ink-faint);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .bdec .dv{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:13.5px;font-weight:700;margin-top:2px}
+  .bdec .dv.pos{color:var(--good)} .bdec .dv.neg{color:var(--bad)} .bdec .dv.acc{color:var(--accent-deep)}
   .bc-votes{display:flex;gap:8px;flex-wrap:wrap;border-top:1px solid var(--border);padding-top:11px}
   .voter{display:flex;align-items:center;gap:4px;background:var(--surface-2);border:1px solid var(--border);border-radius:999px;padding:4px 6px 4px 13px;flex:1;min-width:132px}
   .voter .vn{font-family:var(--display);font-size:12px;font-weight:700;color:var(--ink-soft);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -644,6 +649,8 @@
       <select id="bCat" class="ba-sel" aria-label="Catégorie"></select>
       <input id="bUrl" class="ba-in" placeholder="Lien (facultatif)">
       <input id="bBuy" class="ba-in n" type="number" inputmode="decimal" step="0.1" min="0" placeholder="achat €">
+      <input id="bShip" class="ba-in n" type="number" inputmode="decimal" step="5" min="0" placeholder="port lot €">
+      <input id="bQty" class="ba-in n" type="number" inputmode="numeric" step="10" min="0" placeholder="pièces/lot">
       <input id="bSell" class="ba-in n" type="number" inputmode="decimal" step="0.5" min="0" placeholder="vente €">
       <select id="bBy" class="ba-sel" aria-label="Trouvé par"></select>
       <button class="btn primary sm" id="bAdd"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Ajouter</button>
@@ -1091,13 +1098,26 @@ window.__startJuju=(function(){
       var cc=CATS[it.cat]||CATS.autre;
       var catchip='<span class="bcat" style="color:'+cc.c+';background:color-mix(in srgb,'+cc.c+' 15%,transparent)">'+cc.l+'</span>';
       var pr=(it.buy||it.sell)?'<span class="pr">'+eur(it.buy||0)+' → '+eur(it.sell||0)+(mk?'<span class="mk">×'+mk+'</span>':'')+'</span>':'';
+      var q=it.qty||0, rc=(it.buy||0)+(q>0?(it.ship||0)/q:0);
+      var um=(it.sell||0)-rc, tx=(it.sell||0)>0?Math.round(um/(it.sell)*100):0;
+      var lotB=q>0?um*q:null;
+      var pc=rc>0?Math.ceil(rc/0.3*10-1e-9)/10:null;
+      var dec='';
+      if(it.buy||it.sell){
+        dec='<div class="bdec">'+
+          '<div><div class="dl">Coût réel/pce</div><div class="dv">'+eur(Math.round(rc*100)/100)+'</div></div>'+
+          '<div><div class="dl">Marge/pce</div><div class="dv '+(um>0?"pos":"neg")+'">'+eur(Math.round(um*100)/100)+' · '+tx+'%</div></div>'+
+          (pc!==null?'<div><div class="dl">Prix conseillé 70%</div><div class="dv acc">'+eur(pc)+'</div></div>':'')+
+          (lotB!==null?'<div><div class="dl">Bénéf. lot ('+q+' pces)</div><div class="dv '+(lotB>0?"pos":"neg")+'">'+eur(Math.round(lotB))+'</div></div>':'')+
+        '</div>';
+      }
       var link=it.url?'<a href="'+encodeURI(it.url)+'" target="_blank" rel="noopener">ouvrir ↗</a>':'';
       var by=it.by?'<span class="by">déniché par '+escapeHtml(founders[it.by]||it.by)+'</span>':'';
       function vbtn(who,dir,icon){var on=it.votes[who]===dir;return '<button class="vb '+(dir===1?"up":"down")+(on?" on":"")+'" data-id="'+it.id+'" data-who="'+who+'" data-dir="'+dir+'" aria-label="'+(dir===1?"garder":"écarter")+'">'+icon+'</button>';}
       function voter(who){return '<div class="voter"><span class="vn">'+escapeHtml(founders[who])+'</span>'+vbtn(who,1,"👍")+vbtn(who,-1,"👎")+'</div>';}
       var stopts=Object.keys(STATUTS).map(function(sk){return '<option value="'+sk+'"'+((it.statut||"adisc")===sk?" selected":"")+'>'+STATUTS[sk].l+'</option>';}).join("");
       return '<div class="bc '+st.k+'"><div class="bc-top"><h3>'+escapeHtml(it.name||"(sans nom)")+'</h3><span class="verdict '+v.k+'">'+v.l+'</span></div>'+
-        '<div class="bc-meta">'+catchip+pr+link+by+'</div>'+
+        '<div class="bc-meta">'+catchip+pr+link+by+'</div>'+dec+
         (it.note?'<div class="note">'+escapeHtml(it.note)+'</div>':'')+
         '<div class="bc-votes">'+voter("a")+voter("b")+'</div>'+
         '<div class="bc-foot"><div class="statut-wrap"><span class="stl">Statut</span><select class="stsel" data-id="'+it.id+'">'+stopts+'</select></div><div style="display:flex;gap:8px"><button class="btn sm" data-tostock="'+it.id+'">→ Stock</button><button class="del" data-del="'+it.id+'" title="Supprimer">×</button></div></div></div>';
@@ -1111,7 +1131,7 @@ window.__startJuju=(function(){
     };});
     grid.querySelectorAll("[data-tostock]").forEach(function(b){ b.onclick=function(){
       var it=list.filter(function(x){return x.id===b.dataset.tostock;})[0]; if(!it)return;
-      var si={id:uid(),name:it.name,cat:it.cat||"autre",buy:it.buy||1,ship:0,sell:it.sell||5,qty:100,sold:0,sources:it.url?[{url:it.url,price:it.buy||0,note:"benchmark"}]:[]};
+      var si={id:uid(),name:it.name,cat:it.cat||"autre",buy:it.buy||1,ship:it.ship||0,sell:it.sell||5,qty:it.qty||100,sold:0,sources:it.url?[{url:it.url,price:it.buy||0,note:"benchmark"}]:[]};
       stock.push(si); openRows.add(si.id); save(LS.stock,stock); renderStock(); toast("« "+(it.name||"produit")+" » ajouté au stock");
     };});
     grid.querySelectorAll(".stsel").forEach(function(sel){ sel.onchange=function(){
@@ -1121,8 +1141,8 @@ window.__startJuju=(function(){
   }
   $("bAdd").onclick=function(){
     var name=($("bName").value||"").trim(); if(!name){toast("Donne un nom au produit");$("bName").focus();return;}
-    benchList().push({id:uid(),name:name,cat:$("bCat").value||"autre",url:($("bUrl").value||"").trim(),buy:parseFloat($("bBuy").value)||0,sell:parseFloat($("bSell").value)||0,note:"",by:$("bBy").value||"a",statut:"adisc",votes:{a:0,b:0}});
-    saveBench(); $("bName").value="";$("bUrl").value="";$("bBuy").value="";$("bSell").value="";
+    benchList().push({id:uid(),name:name,cat:$("bCat").value||"autre",url:($("bUrl").value||"").trim(),buy:parseFloat($("bBuy").value)||0,ship:parseFloat($("bShip").value)||0,qty:parseInt($("bQty").value,10)||0,sell:parseFloat($("bSell").value)||0,note:"",by:$("bBy").value||"a",statut:"adisc",votes:{a:0,b:0}});
+    saveBench(); $("bName").value="";$("bUrl").value="";$("bBuy").value="";$("bShip").value="";$("bQty").value="";$("bSell").value="";
     renderBench(); $("bName").focus();
   };
   $("bName").addEventListener("keydown",function(e){if(e.key==="Enter")$("bAdd").click();});
