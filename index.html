@@ -296,11 +296,18 @@
   .schip .cnt{font-family:var(--mono);font-size:11px;background:var(--surface-3);color:var(--ink-soft);border-radius:999px;padding:1px 7px}
   .schip[aria-pressed="true"]{background:var(--accent);color:#fff;border-color:var(--accent)}
   .schip[aria-pressed="true"] .cnt{background:rgba(255,255,255,.28);color:#fff}
-  .bench-add{display:flex;flex-wrap:wrap;gap:8px;align-items:center;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:12px;box-shadow:var(--shadow);margin-bottom:14px}
-  .ba-in,.ba-sel{font-family:var(--sans);font-size:13px;color:var(--ink);background:var(--surface-2);border:1px solid var(--border);border-radius:11px;padding:10px 12px;min-height:42px}
+  .bench-add{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:12px;box-shadow:var(--shadow);margin-bottom:14px}
+  .bfg{display:flex;flex-direction:column;gap:4px}
+  .bfg>label{font-family:var(--display);font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-faint);white-space:nowrap}
+  .bfg.grow{flex:1;min-width:170px} .bfg.grow .ba-in{width:100%}
+  .ba-in,.ba-sel{font-family:var(--sans);font-size:13px;color:var(--ink);background:var(--surface-2);border:1px solid var(--border);border-radius:11px;padding:10px 12px;min-height:42px;box-sizing:border-box}
   .ba-in:focus,.ba-sel:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--ring)}
-  #bName{flex:2;min-width:170px} #bUrl{flex:1;min-width:130px}
-  .ba-in.n{width:94px;font-family:var(--mono);text-align:right} .ba-sel{cursor:pointer}
+  #bUrl{min-width:130px}
+  .ba-in.n{width:96px;font-family:var(--mono);text-align:right} .ba-sel{cursor:pointer}
+  .evl{font-family:var(--display);font-size:10.5px;font-weight:800;padding:3px 10px;border-radius:999px;display:inline-block;margin-top:2px}
+  .evl.high{background:var(--good-soft);color:var(--good)}
+  .evl.med{background:var(--warn-soft);color:var(--warn)}
+  .evl.low{background:var(--bad-soft);color:var(--bad)}
   .bench-sum{font-size:12.5px;color:var(--ink-soft);margin-bottom:12px;display:flex;gap:14px;flex-wrap:wrap}
   .bench-sum b{color:var(--ink);font-family:var(--mono)}
   .bgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:13px}
@@ -645,14 +652,14 @@
     </div>
     <div class="seasons" id="seasons"></div>
     <div class="bench-add">
-      <input id="bName" class="ba-in" placeholder="Nom du produit déniché">
-      <select id="bCat" class="ba-sel" aria-label="Catégorie"></select>
-      <input id="bUrl" class="ba-in" placeholder="Lien (facultatif)">
-      <input id="bBuy" class="ba-in n" type="number" inputmode="decimal" step="0.1" min="0" placeholder="achat €">
-      <input id="bShip" class="ba-in n" type="number" inputmode="decimal" step="5" min="0" placeholder="port lot €">
-      <input id="bQty" class="ba-in n" type="number" inputmode="numeric" step="10" min="0" placeholder="pièces/lot">
-      <input id="bSell" class="ba-in n" type="number" inputmode="decimal" step="0.5" min="0" placeholder="vente €">
-      <select id="bBy" class="ba-sel" aria-label="Trouvé par"></select>
+      <div class="bfg grow"><label for="bName">Produit</label><input id="bName" class="ba-in" placeholder="Ex. claw clip écaille"></div>
+      <div class="bfg"><label for="bCat">Catégorie</label><select id="bCat" class="ba-sel" aria-label="Catégorie"></select></div>
+      <div class="bfg grow"><label for="bUrl">Lien fournisseur</label><input id="bUrl" class="ba-in" placeholder="facultatif"></div>
+      <div class="bfg"><label for="bBuy">Achat € / pce</label><input id="bBuy" class="ba-in n" type="number" inputmode="decimal" step="0.1" min="0" placeholder="1"></div>
+      <div class="bfg"><label for="bShip">Port du lot €</label><input id="bShip" class="ba-in n" type="number" inputmode="decimal" step="5" min="0" placeholder="55"></div>
+      <div class="bfg"><label for="bQty">Pièces / lot</label><input id="bQty" class="ba-in n" type="number" inputmode="numeric" step="10" min="0" placeholder="200"></div>
+      <div class="bfg"><label for="bSell">Vente € / pce</label><input id="bSell" class="ba-in n" type="number" inputmode="decimal" step="0.5" min="0" placeholder="5"></div>
+      <div class="bfg"><label for="bBy">Déniché par</label><select id="bBy" class="ba-sel" aria-label="Trouvé par"></select></div>
       <button class="btn primary sm" id="bAdd"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Ajouter</button>
     </div>
     <div class="bench-sum" id="benchSum"></div>
@@ -1100,15 +1107,26 @@ window.__startJuju=(function(){
       var pr=(it.buy||it.sell)?'<span class="pr">'+eur(it.buy||0)+' → '+eur(it.sell||0)+(mk?'<span class="mk">×'+mk+'</span>':'')+'</span>':'';
       var q=it.qty||0, rc=(it.buy||0)+(q>0?(it.ship||0)/q:0);
       var um=(it.sell||0)-rc, tx=(it.sell||0)>0?Math.round(um/(it.sell)*100):0;
-      var lotB=q>0?um*q:null;
       var pc=rc>0?Math.ceil(rc/0.3*10-1e-9)/10:null;
+      var costTot=q>0?(it.buy||0)*q+(it.ship||0):null;
+      var ventesTot=(q>0&&it.sell>0)?it.sell*q:null;
+      var lotB=(costTot!==null&&ventesTot!==null)?ventesTot-costTot:null;
+      var ev=null;
+      if((it.sell||0)>0&&rc>0){
+        if(tx>=65&&um>=1.5)ev={k:"high",l:"🟢 Élevée"};
+        else if(tx>=45&&um>=0.8)ev={k:"med",l:"🟠 Moyenne"};
+        else ev={k:"low",l:"🔴 Faible"};
+      }
       var dec='';
       if(it.buy||it.sell){
         dec='<div class="bdec">'+
+          (ev?'<div><div class="dl">Évaluation marge</div><span class="evl '+ev.k+'">'+ev.l+'</span></div>':'')+
           '<div><div class="dl">Coût réel/pce</div><div class="dv">'+eur(Math.round(rc*100)/100)+'</div></div>'+
           '<div><div class="dl">Marge/pce</div><div class="dv '+(um>0?"pos":"neg")+'">'+eur(Math.round(um*100)/100)+' · '+tx+'%</div></div>'+
           (pc!==null?'<div><div class="dl">Prix conseillé 70%</div><div class="dv acc">'+eur(pc)+'</div></div>':'')+
-          (lotB!==null?'<div><div class="dl">Bénéf. lot ('+q+' pces)</div><div class="dv '+(lotB>0?"pos":"neg")+'">'+eur(Math.round(lotB))+'</div></div>':'')+
+          (costTot!==null?'<div><div class="dl">Coût total lot</div><div class="dv">'+eur(Math.round(costTot*100)/100)+'</div></div>':'')+
+          (ventesTot!==null?'<div><div class="dl">Ventes totales</div><div class="dv">'+eur(Math.round(ventesTot*100)/100)+'</div></div>':'')+
+          (lotB!==null?'<div><div class="dl">Marge à gagner</div><div class="dv '+(lotB>0?"pos":"neg")+'">'+eur(Math.round(lotB))+'</div></div>':'')+
         '</div>';
       }
       var link=it.url?'<a href="'+encodeURI(it.url)+'" target="_blank" rel="noopener">ouvrir ↗</a>':'';
