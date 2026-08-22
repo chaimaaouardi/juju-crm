@@ -192,7 +192,7 @@
   /* ---------- TABLEAUX ---------- */
   .tbl-scroll{overflow-x:auto;border:1px solid var(--border);border-radius:var(--r);
     background:var(--surface);box-shadow:var(--shadow)}
-  table{border-collapse:collapse;width:100%;min-width:660px;font-size:13.5px}
+  table{border-collapse:collapse;width:100%;min-width:820px;font-size:13.5px}
   thead th{text-align:left;font-family:var(--display);font-size:11px;text-transform:uppercase;
     letter-spacing:.06em;color:var(--ink-faint);font-weight:800;padding:12px 13px;
     border-bottom:1px solid var(--border);white-space:nowrap;background:var(--surface-2)}
@@ -576,7 +576,7 @@
     <div class="tbl-scroll">
       <table>
         <thead><tr>
-          <th>Produit</th><th>Catégorie</th><th class="num">Achat €</th><th class="num">Vente €</th>
+          <th>Produit</th><th>Catégorie</th><th class="num">Achat €</th><th class="num">Port lot €</th><th class="num">Coût/pce</th><th class="num">Vente €</th>
           <th class="num">Achetés</th><th class="num">Vendus</th><th class="num">Restant</th><th class="num">Bénéf. réalisé</th><th>Sources</th><th></th>
         </tr></thead>
         <tbody id="stockBody"></tbody>
@@ -682,9 +682,15 @@
             <div class="field"><label for="m3">Quantité</label><input class="num" type="number" inputmode="numeric" id="m3" value="100" step="10" min="1"></div>
             <div class="field"><label for="m4">Place / jour €</label><input class="num" type="number" inputmode="decimal" id="m4" value="20" step="5" min="0"></div>
           </div>
+          <div class="nr">
+            <div class="field"><label for="m6">Port du lot €</label><input class="num" type="number" inputmode="decimal" id="m6" value="0" step="5" min="0"></div>
+            <div class="field"><label for="m7">Marge nette visée %</label><input class="num" type="number" inputmode="numeric" id="m7" value="70" step="5" min="0" max="95"></div>
+          </div>
           <div class="field"><label for="m5">Part vendue <span class="v" id="v5b">80 %</span></label><input type="range" id="m5" min="20" max="100" step="5" value="80"></div>
         </div>
         <div class="out">
+          <div class="os"><span class="k">Coût réel / pièce (achat + port)</span><span class="vv" id="o_rc">—</span></div>
+          <div class="os"><span class="k">Prix conseillé pour la marge visée</span><span class="vv" id="o_pc">—</span></div>
           <div class="os big"><span class="k">Bénéfice sur le lot</span><span class="vv" id="o_net">—</span></div>
           <div class="os"><span class="k">Marge / pièce · taux</span><span class="vv" id="o_u">—</span></div>
           <div class="os"><span class="k">Seuil de rentabilité</span><span class="vv" id="o_be">—</span></div>
@@ -803,6 +809,8 @@ window.__startJuju=(function(){
       '<td class="full" data-l="Produit"><input class="cell-in txt wide" data-f="name" value="'+escapeHtml(it.name)+'" placeholder="Nom du produit"></td>'+
       '<td data-l="Catégorie"><select class="catsel" data-f="cat">'+opts+'</select></td>'+
       '<td class="num" data-l="Achat €"><input class="cell-in" data-f="buy" type="number" inputmode="decimal" step="0.1" min="0" value="'+it.buy+'"></td>'+
+      '<td class="num" data-l="Port lot €"><input class="cell-in" data-f="ship" type="number" inputmode="decimal" step="1" min="0" value="'+(it.ship||0)+'"></td>'+
+      '<td class="cellcalc rcost" data-l="Coût réel/pce"></td>'+
       '<td class="num" data-l="Vente €"><input class="cell-in" data-f="sell" type="number" inputmode="decimal" step="0.5" min="0" value="'+it.sell+'"></td>'+
       '<td class="num" data-l="Achetés"><input class="cell-in" data-f="qty" type="number" inputmode="numeric" step="1" min="0" value="'+it.qty+'"></td>'+
       '<td class="num" data-l="Vendus"><input class="cell-in" data-f="sold" type="number" inputmode="numeric" step="1" min="0" value="'+it.sold+'"></td>'+
@@ -824,7 +832,7 @@ window.__startJuju=(function(){
   }
   function stockDetailRow(it){
     var tr=document.createElement("tr"); tr.className="src-detail";
-    var td=document.createElement("td"); td.colSpan=10; td.className="full";
+    var td=document.createElement("td"); td.colSpan=12; td.className="full";
     var srcs=it.sources||(it.sources=[]);
     var prices=srcs.map(function(s){return s.price;}).filter(function(p){return p>0;});
     var min=prices.length?Math.min.apply(null,prices):null;
@@ -855,9 +863,12 @@ window.__startJuju=(function(){
     var use=td.querySelector(".s-use"); if(use)use.onclick=function(){ it.buy=min; save(LS.stock,stock); renderStock(); renderDash(); toast("Prix d'achat mis à "+eur(min)); };
     return tr;
   }
+  function realCost(it){ return (it.buy||0) + ((it.ship||0)/Math.max(1,(it.qty||0))); }
   function recalcRow(tr,it){
     var rest=Math.max(0,(it.qty||0)-(it.sold||0));
-    var profit=((it.sell||0)-(it.buy||0))*(it.sold||0);
+    var rc=realCost(it);
+    var profit=((it.sell||0)-rc)*(it.sold||0);
+    tr.querySelector(".rcost").innerHTML='<span>'+eur(Math.round(rc*100)/100)+'</span>';
     tr.querySelector(".rest").innerHTML='<span>'+rest+'</span>';
     var pe=tr.querySelector(".profit"); pe.innerHTML='<b class="'+(profit>0?"":"z")+'">'+eur(profit)+'</b>';
   }
@@ -868,7 +879,7 @@ window.__startJuju=(function(){
     stock.forEach(function(it){ sb.appendChild(stockRow(it)); if(openRows.has(it.id)) sb.appendChild(stockDetailRow(it)); });
   }
   $("addStock").onclick=function(){
-    var it={id:uid(),name:"",cat:"peluche",buy:1,sell:5,qty:100,sold:0,sources:[]}; stock.push(it); openRows.add(it.id); save(LS.stock,stock); renderStock();
+    var it={id:uid(),name:"",cat:"peluche",buy:1,ship:0,sell:5,qty:100,sold:0,sources:[]}; stock.push(it); openRows.add(it.id); save(LS.stock,stock); renderStock();
     var r=sb.querySelector('tr[data-id="'+it.id+'"] [data-f="name"]'); if(r)r.focus();
   };
 
@@ -902,13 +913,14 @@ window.__startJuju=(function(){
   function renderDash(){
     var inv=0,units=0,ca=0,sold=0,marge=0,costSold=0;
     stock.forEach(function(it){
-      inv+=(it.buy||0)*(it.qty||0); units+=(it.qty||0);
+      var rc=realCost(it);
+      inv+=(it.buy||0)*(it.qty||0)+(it.ship||0); units+=(it.qty||0);
       ca+=(it.sell||0)*(it.sold||0); sold+=(it.sold||0);
-      marge+=((it.sell||0)-(it.buy||0))*(it.sold||0); costSold+=(it.buy||0)*(it.sold||0);
+      marge+=((it.sell||0)-rc)*(it.sold||0); costSold+=rc*(it.sold||0);
     });
     var fees=days.reduce(function(a,d){return a+(d.fee||0);},0);
     var net=marge-fees;
-    var restUnits=units-sold, restVal=stock.reduce(function(a,it){return a+(it.buy||0)*Math.max(0,(it.qty||0)-(it.sold||0));},0);
+    var restUnits=units-sold, restVal=stock.reduce(function(a,it){return a+realCost(it)*Math.max(0,(it.qty||0)-(it.sold||0));},0);
     var rate= ca>0? Math.round(marge/ca*100):0;
     var sellRate= units>0? Math.round(sold/units*100):0;
 
@@ -984,7 +996,7 @@ window.__startJuju=(function(){
         '<button class="btn sm" data-add="'+i+'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Stock</button></div></div>';
     }).join("");
     rgrid.querySelectorAll("[data-add]").forEach(function(b){
-      b.onclick=function(){var p=P[+b.dataset.add]; var it={id:uid(),name:p.name,cat:p.cat,buy:p.buy,sell:p.sell,qty:100,sold:0,sources:[]}; stock.push(it); openRows.add(it.id);
+      b.onclick=function(){var p=P[+b.dataset.add]; var it={id:uid(),name:p.name,cat:p.cat,buy:p.buy,ship:0,sell:p.sell,qty:100,sold:0,sources:[]}; stock.push(it); openRows.add(it.id);
         save(LS.stock,stock); renderStock(); toast("« "+p.name+" » ajouté au stock — ajoute tes liens fournisseurs");};
     });
     rgrid.querySelectorAll(".kwc").forEach(function(b){ b.onclick=function(){copy(b.dataset.kw);}; });
@@ -1015,14 +1027,18 @@ window.__startJuju=(function(){
   /* ---------- MARGE ---------- */
   function marge(){
     var buy=+$("m1").value||0,sell=+$("m2").value||0,qty=+$("m3").value||0,fee=+$("m4").value||0,part=+$("m5").value/100;
+    var ship=+$("m6").value||0, tgt=Math.min(95,Math.max(0,+$("m7").value||0))/100;
     $("v5b").textContent=Math.round(part*100)+" %";
-    var soldU=Math.round(qty*part), unit=sell-buy, pct=sell>0?Math.round(unit/sell*100):0;
-    var net=sell*soldU-buy*qty-fee, be= unit>0?Math.ceil((buy*qty+fee)/sell):Infinity;
+    var rc=buy+(qty>0?ship/qty:0);
+    var soldU=Math.round(qty*part), unit=sell-rc, pct=sell>0?Math.round(unit/sell*100):0;
+    var net=sell*soldU-(buy*qty+ship)-fee, be= unit>0?Math.ceil((buy*qty+ship+fee)/sell):Infinity;
+    $("o_rc").textContent=eur(Math.round(rc*100)/100);
+    $("o_pc").textContent= tgt<1? eur(Math.ceil(rc/(1-tgt)*10-1e-9)/10) : "—";
     $("o_net").textContent=eur(net); $("o_net").style.color= net>=0?"var(--good)":"var(--bad)";
-    $("o_u").textContent=eur(unit)+" · "+pct+" %";
+    $("o_u").textContent=eur(Math.round(unit*100)/100)+" · "+pct+" %";
     $("o_be").textContent= isFinite(be)? be+" pièces ("+(qty>0?Math.round(be/qty*100):0)+" %)":"—";
   }
-  ["m1","m2","m3","m4","m5"].forEach(function(id){$(id).addEventListener("input",marge);});
+  ["m1","m2","m3","m4","m5","m6","m7"].forEach(function(id){$(id).addEventListener("input",marge);});
 
   /* ---------- INIT ---------- */
   /* ---------- BENCHMARK SAISONNIER ---------- */
@@ -1095,7 +1111,7 @@ window.__startJuju=(function(){
     };});
     grid.querySelectorAll("[data-tostock]").forEach(function(b){ b.onclick=function(){
       var it=list.filter(function(x){return x.id===b.dataset.tostock;})[0]; if(!it)return;
-      var si={id:uid(),name:it.name,cat:it.cat||"autre",buy:it.buy||1,sell:it.sell||5,qty:100,sold:0,sources:it.url?[{url:it.url,price:it.buy||0,note:"benchmark"}]:[]};
+      var si={id:uid(),name:it.name,cat:it.cat||"autre",buy:it.buy||1,ship:0,sell:it.sell||5,qty:100,sold:0,sources:it.url?[{url:it.url,price:it.buy||0,note:"benchmark"}]:[]};
       stock.push(si); openRows.add(si.id); save(LS.stock,stock); renderStock(); toast("« "+(it.name||"produit")+" » ajouté au stock");
     };});
     grid.querySelectorAll(".stsel").forEach(function(sel){ sel.onchange=function(){
