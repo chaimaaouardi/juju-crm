@@ -327,6 +327,43 @@
   .bdec .dl{font-family:var(--display);font-size:9.5px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:var(--ink-faint);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .bdec .dv{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:13.5px;font-weight:700;margin-top:2px}
   .bdec .dv.pos{color:var(--good)} .bdec .dv.neg{color:var(--bad)} .bdec .dv.acc{color:var(--accent-deep)}
+  .bdec .dv.mut{color:var(--ink-faint);font-size:12px}
+  /* --- panneau d'analyse --- */
+  .bc-top h3{cursor:pointer}
+  .bc-top h3:hover{color:var(--accent-deep)}
+  .anabtn{border:1px solid var(--border);background:var(--surface-2);color:var(--ink-soft);font-family:var(--display);font-size:11.5px;font-weight:800;padding:6px 12px;border-radius:999px;cursor:pointer;white-space:nowrap;display:inline-flex;align-items:center;gap:5px}
+  .anabtn:hover{border-color:var(--accent);color:var(--accent-deep)}
+  .anabtn.on{background:var(--accent);border-color:var(--accent);color:#fff}
+  .banalyse{background:var(--surface-2);border:1px solid var(--border-strong);border-radius:var(--r-sm);padding:13px;display:flex;flex-direction:column;gap:13px}
+  .ban-edit{display:grid;grid-template-columns:repeat(auto-fit,minmax(84px,1fr));gap:8px}
+  .ban-edit div{display:flex;flex-direction:column;gap:3px}
+  .ban-edit label{font-family:var(--display);font-size:9.5px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:var(--ink-faint)}
+  .ban-edit input{font-family:var(--mono);font-variant-numeric:tabular-nums;text-align:right;font-size:13px;color:var(--ink);background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:8px 9px;min-height:38px;width:100%;box-sizing:border-box}
+  .ban-edit input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--ring)}
+  .ban-v{border-radius:10px;padding:10px 12px;border:1px solid var(--border)}
+  .ban-v b{display:block;font-family:var(--display);font-size:14px;font-weight:800;margin-bottom:2px}
+  .ban-v span{font-size:12.5px;line-height:1.45;display:block}
+  .ban-v.good{background:var(--good-soft);border-color:transparent} .ban-v.good b{color:var(--good)}
+  .ban-v.warn{background:var(--warn-soft);border-color:transparent} .ban-v.warn b{color:var(--warn)}
+  .ban-v.bad{background:var(--bad-soft);border-color:transparent} .ban-v.bad b{color:var(--bad)}
+  .ban-v.info{background:var(--accent-soft);border-color:transparent} .ban-v.info b{color:var(--accent-deep)}
+  .ban-h{font-family:var(--display);font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-faint);margin-bottom:7px}
+  .ban-bar{display:flex;height:24px;border-radius:8px;overflow:hidden;border:1px solid var(--border);background:var(--surface-3)}
+  .ban-bar i{display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:10.5px;font-weight:700;color:#fff;min-width:0;overflow:hidden}
+  .ban-leg{display:flex;gap:14px;flex-wrap:wrap;margin-top:7px;font-size:12px;color:var(--ink-soft)}
+  .ban-leg span{display:flex;align-items:center;gap:5px}
+  .ban-leg b{width:9px;height:9px;border-radius:3px;display:inline-block}
+  .ban-lev{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:7px}
+  .ban-lev li{display:flex;gap:9px;align-items:flex-start;font-size:13px;line-height:1.45;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:9px 11px;color:var(--ink-soft)}
+  .ban-lev li em{font-style:normal;color:var(--ink-faint);flex:none}
+  .ban-lev li b{font-family:var(--mono);color:var(--accent-deep);font-weight:700}
+  .ban-sim{width:100%;min-width:0;border-collapse:collapse;font-size:12.5px}
+  .ban-sim th{font-family:var(--display);font-size:9.5px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:var(--ink-faint);text-align:right;padding:4px 6px;background:none;border:none;white-space:nowrap}
+  .ban-sim th:first-child{text-align:left}
+  .ban-sim td{font-family:var(--mono);font-variant-numeric:tabular-nums;text-align:right;padding:6px;border-top:1px solid var(--border);color:var(--ink-soft)}
+  .ban-sim td:first-child{text-align:left;color:var(--ink)}
+  .ban-sim tr.now td{color:var(--ink);font-weight:700;background:var(--surface)}
+  .ban-sim td .ok{color:var(--good);font-weight:700} .ban-sim td .no{color:var(--bad)}
   .bc-votes{display:flex;gap:8px;flex-wrap:wrap;border-top:1px solid var(--border);padding-top:11px}
   .voter{display:flex;align-items:center;gap:4px;background:var(--surface-2);border:1px solid var(--border);border-radius:999px;padding:4px 6px 4px 13px;flex:1;min-width:132px}
   .voter .vn{font-family:var(--display);font-size:12px;font-weight:700;color:var(--ink-soft);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -1092,6 +1129,103 @@ window.__startJuju=(function(){
     if(document.activeElement!==$("fB") && $("fB").value!==founders.b)$("fB").value=founders.b;
     $("bBy").innerHTML='<option value="a">'+escapeHtml(founders.a)+'</option><option value="b">'+escapeHtml(founders.b)+'</option>';
   }
+  /* --- analyse « pourquoi cette marge » --- */
+  var openBench=new Set();
+  var CIBLE=0.65; // marge nette visée pour les conseils
+  function nb(n,d){var f=Math.pow(10,d===undefined?2:d);return Math.round(n*f)/f;}
+  function benchAnalyseBody(it){
+    var q=it.qty||0, buy=it.buy||0, ship=it.ship||0, sell=it.sell||0;
+    var shipPer=q>0?ship/q:0, rc=buy+shipPer, um=sell-rc, tx=sell>0?um/sell*100:null;
+    var H='';
+
+    /* 1. verdict */
+    var miss=[];
+    if(buy<=0)miss.push("le prix d'achat");
+    if(sell<=0)miss.push("le prix de vente");
+    if(ship>0&&q<=0)miss.push("le nombre de pièces du lot");
+    if(miss.length){
+      var sugg = rc>0 ? " Avec un coût de "+eur(nb(rc))+" la pièce, il faudrait vendre autour de <b>"+eur(Math.ceil(rc/(1-CIBLE)*10-1e-9)/10)+"</b> pour une bonne marge." : "";
+      H+='<div class="ban-v info"><b>Il manque '+miss.join(" et ")+'</b><span>Complète '+(miss.length>1?"ces cases":"cette case")+' juste au-dessus — l\'analyse se met à jour toute seule.'+sugg+'</span></div>';
+    } else if(tx===null){
+      H+='<div class="ban-v info"><b>Données incomplètes</b><span>Renseigne les chiffres au-dessus.</span></div>';
+    } else if(um<=0){
+      H+='<div class="ban-v bad"><b>Tu vends à perte</b><span>Chaque pièce vendue te fait perdre '+eur(nb(-um))+'. Le prix de vente ('+eur(sell)+') est en dessous de ton coût réel ('+eur(nb(rc))+').</span></div>';
+    } else if(tx<45){
+      H+='<div class="ban-v bad"><b>Marge faible — '+Math.round(tx)+' %</b><span>Tu gagnes '+eur(nb(um))+' par pièce. Sur un stand, en dessous de 45 % la moindre invendue ou la place du marché mange le bénéfice.</span></div>';
+    } else if(tx<65){
+      H+='<div class="ban-v warn"><b>Marge moyenne — '+Math.round(tx)+' %</b><span>Tu gagnes '+eur(nb(um))+' par pièce. C\'est jouable, mais il reste de la marge de progression (vise 65-70 %).</span></div>';
+    } else {
+      H+='<div class="ban-v good"><b>Bonne marge — '+Math.round(tx)+' %</b><span>Tu gagnes '+eur(nb(um))+' par pièce'+(q>0?", soit "+eur(Math.round(um*q))+" sur le lot entier":"")+'. Tu peux y aller.</span></div>';
+    }
+
+    /* 2. d'où vient le coût */
+    if(buy>0&&rc>0){
+      var pa=Math.round(buy/rc*100), pp=100-pa;
+      H+='<div><div class="ban-h">D\'où vient ton coût de '+eur(nb(rc))+' la pièce</div>'+
+        '<div class="ban-bar">'+
+          '<i style="width:'+pa+'%;background:var(--accent)">'+(pa>=18?pa+' %':'')+'</i>'+
+          (pp>0?'<i style="width:'+pp+'%;background:var(--warn)">'+(pp>=18?pp+' %':'')+'</i>':'')+
+        '</div>'+
+        '<div class="ban-leg"><span><b style="background:var(--accent)"></b>Achat '+eur(buy)+'</span>'+
+        (shipPer>0?'<span><b style="background:var(--warn)"></b>Port '+eur(nb(shipPer))+'/pce ('+eur(ship)+' ÷ '+q+')</span>':'<span>Pas de frais de port saisis</span>')+
+        '</div></div>';
+    }
+
+    /* 3. le problème + leviers */
+    if(sell>0&&buy>0&&tx!==null&&tx<65){
+      var portPart=rc>0?shipPer/rc:0;
+      var plafond=(sell-buy)/sell*100;           // marge max atteignable si le port était gratuit
+      var portRattrapable=(sell*(1-CIBLE)-buy)>0; // commander plus suffit-il vraiment ?
+      var cause;
+      if(portPart>0.25&&portRattrapable){
+        cause="Le <b>port</b> pèse "+Math.round(portPart*100)+" % de ton coût : tu commandes trop peu de pièces pour l'amortir. C'est réparable sans toucher au prix.";
+      } else if(portPart>0.25){
+        cause="Le port pèse "+Math.round(portPart*100)+" % de ton coût, mais ce n'est pas le vrai problème : même avec le <b>port offert</b> tu plafonnerais à "+Math.round(plafond)+" %. L'écart entre ton prix d'achat ("+eur(buy)+") et ton prix de vente ("+eur(sell)+") est trop faible.";
+      } else if(tx<45){
+        cause="Ton <b>prix de vente</b> est trop bas par rapport à ce que te coûte la pièce : à "+eur(sell)+" tu ne peux pas dépasser "+Math.round(plafond)+" % de marge.";
+      } else {
+        cause="L'écart entre ton achat et ta vente est un peu juste : tu plafonnes à "+Math.round(plafond)+" % même en optimisant le port.";
+      }
+      H+='<div><div class="ban-h">Le problème</div><div class="ban-v warn" style="background:var(--surface);border-color:var(--border)"><span>'+cause+'</span></div></div>';
+
+      var lev='';
+      var pxCible=Math.ceil(rc/(1-CIBLE)*10-1e-9)/10;
+      lev+='<li><em>1.</em><span>Vendre à <b>'+eur(pxCible)+'</b> au lieu de '+eur(sell)+' → tu passes à 65 % de marge.</span></li>';
+      var achatMax=sell*(1-CIBLE)-shipPer;
+      if(achatMax>0) lev+='<li><em>2.</em><span>Ou négocier l\'achat à <b>'+eur(nb(achatMax))+'</b> max au lieu de '+eur(buy)+' (en gardant ton prix de vente).</span></li>';
+      else lev+='<li><em>2.</em><span>Même gratuit à l\'achat, ce produit n\'atteint pas 65 % à '+eur(sell)+' : c\'est le prix de vente qu\'il faut monter.</span></li>';
+      if(ship>0){
+        var den=sell*(1-CIBLE)-buy;
+        if(den>0){
+          var qBesoin=Math.ceil(ship/den);
+          lev+='<li><em>3.</em><span>Ou commander <b>'+qBesoin+' pièces</b> au lieu de '+(q||'?')+' : le port tomberait à '+eur(nb(ship/qBesoin))+'/pce et tu atteindrais 65 %.</span></li>';
+        }
+      }
+      H+='<div><div class="ban-h">Pour que ça devienne bon</div><ul class="ban-lev">'+lev+'</ul></div>';
+    }
+
+    /* 4. simulateur quantité */
+    if(ship>0&&sell>0&&buy>0){
+      var qs=[100,200,300,500,1000];
+      if(q>0&&qs.indexOf(q)<0){qs.push(q);qs.sort(function(a,b){return a-b;});}
+      H+='<div><div class="ban-h">Si tu commandes plus (le port se dilue)</div>'+
+        '<table class="ban-sim"><thead><tr><th>Pièces</th><th>Port/pce</th><th>Coût/pce</th><th>Marge</th></tr></thead><tbody>'+
+        qs.map(function(n){
+          var sp=ship/n, c=buy+sp, m=sell>0?(sell-c)/sell*100:0;
+          return '<tr class="'+(n===q?"now":"")+'"><td>'+n+(n===q?" (actuel)":"")+'</td><td>'+eur(nb(sp))+'</td><td>'+eur(nb(c))+'</td>'+
+            '<td><span class="'+(m>=65?"ok":(m<45?"no":""))+'">'+Math.round(m)+' %</span></td></tr>';
+        }).join("")+'</tbody></table></div>';
+    }
+    return H;
+  }
+  function benchAnalysePanel(it){
+    function f(k,lbl,val,step){return '<div><label>'+lbl+'</label><input type="number" inputmode="decimal" step="'+step+'" min="0" data-af="'+k+'" data-id="'+it.id+'" value="'+(val||"")+'"></div>';}
+    return '<div class="banalyse">'+
+      '<div class="ban-edit">'+f("buy","Achat €/pce",it.buy,"0.1")+f("ship","Port lot €",it.ship,"5")+f("qty","Pièces/lot",it.qty,"10")+f("sell","Vente €/pce",it.sell,"0.5")+'</div>'+
+      '<div class="ban-body" data-body="'+it.id+'">'+benchAnalyseBody(it)+'</div>'+
+    '</div>';
+  }
+
   function renderBench(){
     renderSeasons(); foundersUI();
     var list=benchList(), grid=$("bgrid");
@@ -1104,25 +1238,26 @@ window.__startJuju=(function(){
       var v=verdict(it), st=STATUTS[it.statut||"adisc"], mk=it.buy>0?Math.round(it.sell/it.buy*10)/10:0;
       var cc=CATS[it.cat]||CATS.autre;
       var catchip='<span class="bcat" style="color:'+cc.c+';background:color-mix(in srgb,'+cc.c+' 15%,transparent)">'+cc.l+'</span>';
-      var pr=(it.buy||it.sell)?'<span class="pr">'+eur(it.buy||0)+' → '+eur(it.sell||0)+(mk?'<span class="mk">×'+mk+'</span>':'')+'</span>':'';
+      var pr=(it.buy||it.sell)?'<span class="pr">'+eur(it.buy||0)+' → '+((it.sell||0)>0?eur(it.sell):'<span style="color:var(--ink-faint)">vente ?</span>')+(mk?'<span class="mk">×'+mk+'</span>':'')+'</span>':'';
       var q=it.qty||0, rc=(it.buy||0)+(q>0?(it.ship||0)/q:0);
       var um=(it.sell||0)-rc, tx=(it.sell||0)>0?Math.round(um/(it.sell)*100):0;
       var pc=rc>0?Math.ceil(rc/0.3*10-1e-9)/10:null;
       var costTot=q>0?(it.buy||0)*q+(it.ship||0):null;
       var ventesTot=(q>0&&it.sell>0)?it.sell*q:null;
       var lotB=(costTot!==null&&ventesTot!==null)?ventesTot-costTot:null;
+      var hasSell=(it.sell||0)>0;
       var ev=null;
-      if((it.sell||0)>0&&rc>0){
+      if(hasSell&&rc>0){
         if(tx>=65&&um>=1.5)ev={k:"high",l:"🟢 Élevée"};
         else if(tx>=45&&um>=0.8)ev={k:"med",l:"🟠 Moyenne"};
         else ev={k:"low",l:"🔴 Faible"};
-      }
+      } else if(it.buy||it.sell){ ev={k:"",l:"⚪ À compléter"}; }
       var dec='';
       if(it.buy||it.sell){
         dec='<div class="bdec">'+
           (ev?'<div><div class="dl">Évaluation marge</div><span class="evl '+ev.k+'">'+ev.l+'</span></div>':'')+
           '<div><div class="dl">Coût réel/pce</div><div class="dv">'+eur(Math.round(rc*100)/100)+'</div></div>'+
-          '<div><div class="dl">Marge/pce</div><div class="dv '+(um>0?"pos":"neg")+'">'+eur(Math.round(um*100)/100)+' · '+tx+'%</div></div>'+
+          '<div><div class="dl">Marge/pce</div>'+(hasSell?'<div class="dv '+(um>0?"pos":"neg")+'">'+eur(Math.round(um*100)/100)+' · '+tx+'%</div>':'<div class="dv mut">prix de vente ?</div>')+'</div>'+
           (pc!==null?'<div><div class="dl">Prix conseillé 70%</div><div class="dv acc">'+eur(pc)+'</div></div>':'')+
           (costTot!==null?'<div><div class="dl">Coût total lot</div><div class="dv">'+eur(Math.round(costTot*100)/100)+'</div></div>':'')+
           (ventesTot!==null?'<div><div class="dl">Ventes totales</div><div class="dv">'+eur(Math.round(ventesTot*100)/100)+'</div></div>':'')+
@@ -1134,8 +1269,11 @@ window.__startJuju=(function(){
       function vbtn(who,dir,icon){var on=it.votes[who]===dir;return '<button class="vb '+(dir===1?"up":"down")+(on?" on":"")+'" data-id="'+it.id+'" data-who="'+who+'" data-dir="'+dir+'" aria-label="'+(dir===1?"garder":"écarter")+'">'+icon+'</button>';}
       function voter(who){return '<div class="voter"><span class="vn">'+escapeHtml(founders[who])+'</span>'+vbtn(who,1,"👍")+vbtn(who,-1,"👎")+'</div>';}
       var stopts=Object.keys(STATUTS).map(function(sk){return '<option value="'+sk+'"'+((it.statut||"adisc")===sk?" selected":"")+'>'+STATUTS[sk].l+'</option>';}).join("");
-      return '<div class="bc '+st.k+'"><div class="bc-top"><h3>'+escapeHtml(it.name||"(sans nom)")+'</h3><span class="verdict '+v.k+'">'+v.l+'</span></div>'+
+      var isOpen=openBench.has(it.id);
+      return '<div class="bc '+st.k+'"><div class="bc-top"><h3 data-ana="'+it.id+'" title="Voir l\'analyse">'+escapeHtml(it.name||"(sans nom)")+'</h3><span class="verdict '+v.k+'">'+v.l+'</span></div>'+
         '<div class="bc-meta">'+catchip+pr+link+by+'</div>'+dec+
+        '<button class="anabtn'+(isOpen?" on":"")+'" data-ana="'+it.id+'">'+(isOpen?"▲ Fermer l\'analyse":"▼ Pourquoi cette marge ? Corriger les chiffres")+'</button>'+
+        (isOpen?benchAnalysePanel(it):'')+
         (it.note?'<div class="note">'+escapeHtml(it.note)+'</div>':'')+
         '<div class="bc-votes">'+voter("a")+voter("b")+'</div>'+
         '<div class="bc-foot"><div class="statut-wrap"><span class="stl">Statut</span><select class="stsel" data-id="'+it.id+'">'+stopts+'</select></div><div style="display:flex;gap:8px"><button class="btn sm" data-tostock="'+it.id+'">→ Stock</button><button class="del" data-del="'+it.id+'" title="Supprimer">×</button></div></div></div>';
@@ -1152,6 +1290,22 @@ window.__startJuju=(function(){
       var si={id:uid(),name:it.name,cat:it.cat||"autre",buy:it.buy||1,ship:it.ship||0,sell:it.sell||5,qty:it.qty||100,sold:0,sources:it.url?[{url:it.url,price:it.buy||0,note:"benchmark"}]:[]};
       stock.push(si); openRows.add(si.id); save(LS.stock,stock); renderStock(); toast("« "+(it.name||"produit")+" » ajouté au stock");
     };});
+    grid.querySelectorAll("[data-ana]").forEach(function(b){ b.onclick=function(){
+      var id=b.dataset.ana;
+      if(openBench.has(id))openBench.delete(id); else openBench.add(id);
+      renderBench();
+    };});
+    grid.querySelectorAll("[data-af]").forEach(function(el){
+      el.addEventListener("input",function(){
+        var it=list.filter(function(x){return x.id===el.dataset.id;})[0]; if(!it)return;
+        var f=el.dataset.af;
+        it[f]= (f==="qty")?(parseInt(el.value,10)||0):(parseFloat(el.value)||0);
+        saveBench();
+        var body=grid.querySelector('[data-body="'+it.id+'"]');
+        if(body)body.innerHTML=benchAnalyseBody(it);
+      });
+      el.addEventListener("change",function(){renderBench();});
+    });
     grid.querySelectorAll(".stsel").forEach(function(sel){ sel.onchange=function(){
       var it=list.filter(function(x){return x.id===sel.dataset.id;})[0]; if(!it)return;
       it.statut=sel.value; saveBench(); renderBench();
