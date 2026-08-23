@@ -364,6 +364,26 @@
   .ban-sim td:first-child{text-align:left;color:var(--ink)}
   .ban-sim tr.now td{color:var(--ink);font-weight:700;background:var(--surface)}
   .ban-sim td .ok{color:var(--good);font-weight:700} .ban-sim td .no{color:var(--bad)}
+  /* --- votes en attente --- */
+  nav.tabs button{position:relative}
+  .tabdot{position:absolute;top:2px;right:2px;min-width:17px;height:17px;padding:0 4px;border-radius:999px;
+    background:var(--bad);color:#fff;font-family:var(--mono);font-size:10px;font-weight:700;line-height:17px;text-align:center;box-shadow:0 0 0 2px var(--surface-2)}
+  @media (max-width:719px){.tabdot{top:0;right:8px}}
+  .pendbar{display:none;align-items:center;gap:12px;flex-wrap:wrap;background:var(--accent-soft);
+    border:1px solid var(--accent);border-radius:var(--r);padding:12px 15px;margin-bottom:14px}
+  .pendbar.show{display:flex}
+  .pendbar .pb-t{flex:1;min-width:200px;font-size:13.5px;color:var(--ink)}
+  .pendbar .pb-t b{font-family:var(--display);font-weight:800}
+  .pendbar button{border:1px solid var(--accent);background:var(--accent);color:#fff;font-family:var(--display);
+    font-size:12.5px;font-weight:800;padding:8px 14px;border-radius:999px;cursor:pointer;white-space:nowrap}
+  .pendbar button:hover{background:var(--accent-deep);border-color:var(--accent-deep)}
+  .bc.tovote{border-color:var(--accent);box-shadow:0 0 0 3px var(--ring)}
+  .voter.me{border-color:var(--accent);background:var(--accent-soft)}
+  .voter.me .vn{color:var(--accent-deep)}
+  .mesel{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--ink-soft);white-space:nowrap}
+  .mesel select{font-family:var(--display);font-size:12.5px;font-weight:700;color:var(--ink);background:var(--surface);
+    border:1px solid var(--border);border-radius:999px;padding:7px 10px;cursor:pointer}
+  .mesel select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--ring)}
   .bc-votes{display:flex;gap:8px;flex-wrap:wrap;border-top:1px solid var(--border);padding-top:11px}
   .voter{display:flex;align-items:center;gap:4px;background:var(--surface-2);border:1px solid var(--border);border-radius:999px;padding:4px 6px 4px 13px;flex:1;min-width:132px}
   .voter .vn{font-family:var(--display);font-size:12px;font-weight:700;color:var(--ink-soft);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -685,8 +705,12 @@
       <div class="founders"><span>Qui vote :</span>
         <input id="fA" class="fname" maxlength="14" aria-label="Ton prénom">
         <input id="fB" class="fname" maxlength="14" aria-label="Prénom du cofondateur">
+        <span class="mesel">Sur ce téléphone, je suis
+          <select id="meSel" aria-label="Qui utilise cet appareil"><option value="">— choisir —</option><option value="a"></option><option value="b"></option></select>
+        </span>
       </div>
     </div>
+    <div class="pendbar" id="pendBar"><span class="pb-t" id="pendTxt"></span><button id="pendGo">Voter maintenant</button></div>
     <div class="seasons" id="seasons"></div>
     <div class="bench-add">
       <div class="bfg grow"><label for="bName">Produit</label><input id="bName" class="ba-in" placeholder="Ex. claw clip écaille"></div>
@@ -766,6 +790,7 @@ window.__startJuju=(function(){
   function save(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){} if(k!==LS.theme&&window.__dbPush)window.__dbPush(k,v);}
   function eur(n){n=Math.round(n*100)/100;return n.toLocaleString("fr-FR",{minimumFractionDigits:(Math.abs(n)%1?2:0),maximumFractionDigits:2})+" €";}
   function toast(m){var t=$("toast");t.textContent=m;t.classList.add("show");clearTimeout(t._t);t._t=setTimeout(function(){t.classList.remove("show");},1800);}
+  window.__jujuToast=toast;
   function uid(){return "x"+Math.floor(Date.now()%1e9).toString(36)+Math.floor(performance.now()).toString(36);}
   function escapeHtml(s){return (s||"").replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
 
@@ -1105,6 +1130,52 @@ window.__startJuju=(function(){
   if(founders.a==="Moi")founders.a="Chaimaa"; if(founders.b==="Mon frère")founders.b="Amine"; save(LS.founders,founders);
   var bench=load(LS.bench,{});
   (function(){var el=$("bCat"); if(el){el.innerHTML=CATKEYS.map(function(k){return '<option value="'+k+'">'+CATS[k].l+'</option>';}).join(""); el.value="autre";}})();
+
+  /* --- qui utilise CET appareil (local, jamais synchronisé) --- */
+  var LS_ME="juju_me_v1";
+  var moi=null; try{moi=JSON.parse(localStorage.getItem(LS_ME));}catch(e){}
+  function setMoi(v){moi=v||null; try{localStorage.setItem(LS_ME,JSON.stringify(moi));}catch(e){}}
+  function norm(s){return (s||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");}
+  if(!moi&&window.__jujuEmail){                       // devine à partir de l'email de connexion
+    var lp=norm(window.__jujuEmail).split("@")[0];
+    if(founders.a&&lp.indexOf(norm(founders.a))>=0)setMoi("a");
+    else if(founders.b&&lp.indexOf(norm(founders.b))>=0)setMoi("b");
+  }
+  function meUI(){
+    var s=$("meSel"); if(!s)return;
+    s.options[1].textContent=founders.a; s.options[1].value="a";
+    s.options[2].textContent=founders.b; s.options[2].value="b";
+    s.value=moi||"";
+  }
+  function aVoter(it){ return (it.statut||"adisc")==="adisc" && moi && !(it.votes&&it.votes[moi]); }
+  function pendingList(){
+    var out=[];
+    Object.keys(bench).forEach(function(sk){
+      (bench[sk]||[]).forEach(function(it){ if(aVoter(it)) out.push({season:sk,it:it}); });
+    });
+    return out;
+  }
+  function updatePending(){
+    var p=pendingList(), n=p.length;
+    var btn=tabs.querySelector('[data-tab="bench"]');
+    if(btn){
+      var dot=btn.querySelector(".tabdot");
+      if(n>0){ if(!dot){dot=document.createElement("span");dot.className="tabdot";btn.appendChild(dot);} dot.textContent=n>9?"9+":n; }
+      else if(dot){dot.remove();}
+    }
+    var bar=$("pendBar"), txt=$("pendTxt");
+    if(!bar)return;
+    if(!moi){
+      bar.classList.add("show");
+      txt.innerHTML="👋 <b>Dis qui tu es</b> (en haut à droite) pour voir les produits qui attendent ton vote.";
+      $("pendGo").style.display="none";
+    } else if(n>0){
+      bar.classList.add("show"); $("pendGo").style.display="";
+      var qui=founders[moi==="a"?"b":"a"];
+      txt.innerHTML="🔔 <b>"+n+" produit"+(n>1?"s":"")+"</b> "+(n>1?"attendent":"attend")+" ton vote"+(qui?" — ajouté"+(n>1?"s":"")+" pour décider avec "+escapeHtml(qui):"")+".";
+    } else { bar.classList.remove("show"); }
+  }
+  window.__jujuPending=updatePending;
   var curSeason="sep-oct";
   function saveBench(){save(LS.bench,bench);}
   function benchList(){ return bench[curSeason]||(bench[curSeason]=[]); }
@@ -1227,7 +1298,7 @@ window.__startJuju=(function(){
   }
 
   function renderBench(){
-    renderSeasons(); foundersUI();
+    renderSeasons(); foundersUI(); meUI(); updatePending();
     var list=benchList(), grid=$("bgrid");
     var nRet=0,nDisc=0,nPas=0;
     list.forEach(function(it){var s=it.statut||"adisc";if(s==="retenu")nRet++;else if(s==="pasretenu")nPas++;else nDisc++;});
@@ -1267,10 +1338,10 @@ window.__startJuju=(function(){
       var link=it.url?'<a href="'+encodeURI(it.url)+'" target="_blank" rel="noopener">ouvrir ↗</a>':'';
       var by=it.by?'<span class="by">déniché par '+escapeHtml(founders[it.by]||it.by)+'</span>':'';
       function vbtn(who,dir,icon){var on=it.votes[who]===dir;return '<button class="vb '+(dir===1?"up":"down")+(on?" on":"")+'" data-id="'+it.id+'" data-who="'+who+'" data-dir="'+dir+'" aria-label="'+(dir===1?"garder":"écarter")+'">'+icon+'</button>';}
-      function voter(who){return '<div class="voter"><span class="vn">'+escapeHtml(founders[who])+'</span>'+vbtn(who,1,"👍")+vbtn(who,-1,"👎")+'</div>';}
+      function voter(who){return '<div class="voter'+(who===moi?" me":"")+'"><span class="vn">'+escapeHtml(founders[who])+(who===moi?" (toi)":"")+'</span>'+vbtn(who,1,"👍")+vbtn(who,-1,"👎")+'</div>';}
       var stopts=Object.keys(STATUTS).map(function(sk){return '<option value="'+sk+'"'+((it.statut||"adisc")===sk?" selected":"")+'>'+STATUTS[sk].l+'</option>';}).join("");
       var isOpen=openBench.has(it.id);
-      return '<div class="bc '+st.k+'"><div class="bc-top"><h3 data-ana="'+it.id+'" title="Voir l\'analyse">'+escapeHtml(it.name||"(sans nom)")+'</h3><span class="verdict '+v.k+'">'+v.l+'</span></div>'+
+      return '<div class="bc '+st.k+(aVoter(it)?" tovote":"")+'" data-card="'+it.id+'"><div class="bc-top"><h3 data-ana="'+it.id+'" title="Voir l\'analyse">'+escapeHtml(it.name||"(sans nom)")+'</h3><span class="verdict '+v.k+'">'+v.l+'</span></div>'+
         '<div class="bc-meta">'+catchip+pr+link+by+'</div>'+dec+
         '<button class="anabtn'+(isOpen?" on":"")+'" data-ana="'+it.id+'">'+(isOpen?"▲ Fermer l\'analyse":"▼ Pourquoi cette marge ? Corriger les chiffres")+'</button>'+
         (isOpen?benchAnalysePanel(it):'')+
@@ -1320,15 +1391,33 @@ window.__startJuju=(function(){
   $("bName").addEventListener("keydown",function(e){if(e.key==="Enter")$("bAdd").click();});
   $("fA").addEventListener("input",function(){founders.a=$("fA").value.trim()||"Moi";save(LS.founders,founders);renderBench();});
   $("fB").addEventListener("input",function(){founders.b=$("fB").value.trim()||"Cofondateur";save(LS.founders,founders);renderBench();});
+  $("meSel").addEventListener("change",function(){
+    setMoi($("meSel").value); renderBench();
+    if(moi)toast("Sur cet appareil, tu es "+founders[moi]);
+  });
+  $("pendGo").onclick=function(){
+    var p=pendingList(); if(!p.length)return;
+    var first=p[0];
+    if(first.season!==curSeason){curSeason=first.season;renderBench();}
+    var el=$("bgrid").querySelector('[data-card="'+first.it.id+'"]');
+    if(el){el.scrollIntoView({behavior:"smooth",block:"center"});}
+  };
 
   /* ---------- INIT (appelé après connexion / synchro) ---------- */
-  return function(){
+  function boot(){
     stock=load(LS.stock,[]); stock.forEach(function(it){ if(!it.sources)it.sources=[]; });
     days=load(LS.days,[]); radarState=load(LS.radar,null); bench=load(LS.bench,{});
     founders=load(LS.founders,{a:"Chaimaa",b:"Amine"});
     if(founders.a==="Moi")founders.a="Chaimaa"; if(founders.b==="Mon frère")founders.b="Amine";
+    if(!moi&&window.__jujuEmail){
+      var lp=norm(window.__jujuEmail).split("@")[0];
+      if(founders.a&&lp.indexOf(norm(founders.a))>=0)setMoi("a");
+      else if(founders.b&&lp.indexOf(norm(founders.b))>=0)setMoi("b");
+    }
     renderStock(); renderDays(); initRadar(); score(); marge(); renderDash(); renderBench();
-  };
+  }
+  window.__jujuRefresh=boot;   // rechargement à chaud quand l'autre modifie
+  return boot;
 })();
 
 /* ---------- CONNEXION + SYNCHRO SUPABASE ---------- */
@@ -1392,12 +1481,18 @@ window.__startJuju=(function(){
         var row=p.new; if(!row||KEYS.indexOf(row.id)<0)return;
         try{localStorage.setItem(row.id,JSON.stringify(row.payload));}catch(e){}
         var mine=row.updated_by===me&&own[row.id]&&(Date.now()-own[row.id]<6000);
-        if(!mine){
-          var bar=document.getElementById("remoteBar");
-          document.getElementById("remoteMsg").textContent="Modifié par "+((row.updated_by||"l'autre").split("@")[0]);
-          bar.style.display="flex";
+        if(mine)return;
+        var qui=(row.updated_by||"l'autre").split("@")[0];
+        var ae=document.activeElement, typing=ae&&/^(INPUT|SELECT|TEXTAREA)$/.test(ae.tagName);
+        if(!typing&&window.__jujuRefresh){
+          window.__jujuRefresh();                       // recharge à chaud, sans perdre la page
+          if(row.id==="juju_bench_v1"&&window.__jujuToast)window.__jujuToast("🔔 "+qui+" a mis à jour le benchmark");
+        } else {                                        // en pleine saisie : on ne bouge rien
+          document.getElementById("remoteMsg").textContent="Modifié par "+qui;
+          document.getElementById("remoteBar").style.display="flex";
         }
       }).subscribe();
+      window.__jujuEmail=me;
       window.__startJuju();
     });
   }
